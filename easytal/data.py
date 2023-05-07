@@ -14,7 +14,7 @@ class DataImport:
         df = df.set_index("Date")
         return df
     
-    def import_binance_klines(url: str):
+    def import_binance_klines(url: str) -> pd.DataFrame:
         """
         Returns a `DataFrame` object of the inputed API string.
 

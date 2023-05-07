@@ -2,11 +2,14 @@ import pandas as pd
 
 class Oscillators:
 
-    def rsi(close: pd.Series, period: int) -> pd.Series:
-        """
-        Returns a `Series` object containing RSI values for the period and imported DataFrame.
+    def __init__(self) -> None:
+        pass
 
-        :param close: `Series` object containing closinng price information.
+    def rsi(self, close: pd.Series, period: int) -> pd.Series:
+        """
+        Returns a `Series` object containing RSI values for the period and imported series.
+
+        :param close: `Series` object containing closing price information.
         :param period: Integer value over which to calculate the RSI.
         """
 
@@ -23,4 +26,45 @@ class Oscillators:
     
 class Overlays:
 
-    pass
+    def __init__(self) -> None:
+        pass
+
+    def sma(self, close: pd.Series, period: int) -> pd.Series:
+        """
+        Returns a `Series` object containing SMA values for the period and imported series.
+
+        :param close: `Series` object containing closing price information.
+        :param period: Integer value over which to calculate the SMA.
+        """
+
+        sma = close.rolling(period).mean()
+
+        return sma
+
+    def ema(self, close: pd.Series, period: int) -> pd.Series:
+        """
+        Returns a `Series` object containing EMA values for the period and imported series.
+
+        :param close: `Series` object containing closing price information.
+        :param period: Integer value over which to calculate the EMA.
+        """
+
+        ema = close.ewm(span=period, adjust=False).mean()
+
+        return ema
+
+    def bollinger_bands(self, close: pd.Series, period: int) -> pd.Series:
+        """
+        Returns both the upper and lower Bollinger Band values as `Series` objects.
+
+        :param close: `Series` object containing closing price information.
+        :param period: Integer value over which to calculate the Bollinger Bands.
+        """
+
+        sma = self.sma(close, period)
+        std = close.rolling(period).std()
+
+        upper_bband = sma + std * 2
+        lower_bband = sma - std * 2
+
+        return upper_bband, lower_bband
