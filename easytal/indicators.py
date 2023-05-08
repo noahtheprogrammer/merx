@@ -52,6 +52,35 @@ class Overlays:
         ema = close.ewm(span=period, adjust=False).mean()
 
         return ema
+    
+    def dema(self, close: pd.Series, period: int) -> pd.Series:
+        """
+        Returns a `Series` object containing DEMA values for the period and imported series.
+
+        :param close: `Series` object containing closing price information.
+        :param period: Integer value over which to calculate the DEMA.
+        """
+        
+        primary_ema = self.ema(close, period)
+        secondary_ema = self.ema(primary_ema, period)
+        dema = (primary_ema * 2) - secondary_ema
+
+        return dema
+    
+    def tema(self, close: pd.Series, period: int) -> pd.Series:
+        """
+        Returns a `Series` object containing TEMA values for the period and imported series.
+
+        :param close: `Series` object containing closing price information.
+        :param period: Integer value over which to calculate the TEMA.
+        """
+        
+        primary_ema = self.ema(close, period)
+        secondary_ema = self.ema(primary_ema, period)
+        tertiary_ema = self.ema(secondary_ema, period)
+        tema = (primary_ema * 3) - (secondary_ema * 3) + tertiary_ema
+
+        return tema
 
     def bollinger_bands(self, close: pd.Series, period: int) -> pd.Series:
         """
