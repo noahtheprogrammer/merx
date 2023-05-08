@@ -1,4 +1,5 @@
 import pandas as pd
+from math import sqrt
 
 class Oscillators:
 
@@ -81,6 +82,39 @@ class Overlays:
         tema = (primary_ema * 3) - (secondary_ema * 3) + tertiary_ema
 
         return tema
+    
+    def wma(self, close: pd.Series, period: int) -> pd.Series:
+         """
+        Returns a `Series` object containing WMA values for the period and imported series.
+
+        :param close: `Series` object containing closing price information.
+        :param period: Integer value over which to calculate the WMA.
+        """
+
+        for i in range(1, period):
+            sum = pd.Series()
+            sum[i-1] = sum[i] + (close[i] * i)
+
+        divisor = period * (period + 1) / 2
+        wma = sum / divisor
+
+        return wma
+    
+    def hma(self, close: pd.Series, period: int)  -> pd.Series:
+        """
+        Returns a `Series` object containing HMA values for the period and imported series.
+
+        :param close: `Series` object containing closing price information.
+        :param period: Integer value over which to calculate the HMA.
+        """
+
+        primary_wma = self.wma(close, round(period/2))
+        secondary_wma = self.wma(close, period)
+
+        raw_hma = (2 * primary_wma) - secondary_wma
+        hma = self.wma(raw_hma, round(sqrt(period)))
+
+        return hma
 
     def bollinger_bands(self, close: pd.Series, period: int) -> pd.Series:
         """
