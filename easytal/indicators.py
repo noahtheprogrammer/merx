@@ -126,3 +126,28 @@ class Overlays:
         lower_bband = sma - std * 2
 
         return upper_bband, lower_bband
+    
+    def pivot_points(self, high: pd.Series, low: pd.Series, close: pd.Series) -> pd.DataFrame:
+        """
+        Returns the pivot point, first support, second support, first resistance, and second resistance in a `DataFrame` object.
+
+        :param high: `Series` object containing high price information.
+        :param low: `Series` object containing low price information.
+        :param close: `Series` object containing closing price information.
+        """
+
+        columns=["Pivot", "First Support", "Second Support", "First Resistance", "Second Resistance"]
+        pivot_df = pd.DataFrame(columns=columns)
+
+        for i in range(1, len(close)+1):
+            x = i-1
+            point = (high[x] + low[x] + close[x])/3
+
+            first_sprt = (point * 2) - high[x]
+            second_sprt = point - (high[x], low[x])
+            first_res = (point * 2) - low[x]
+            second_res = point + (high[x] - low[x])
+
+            pivot_df.loc[len(pivot_df)] = [point, first_sprt, second_sprt, first_res, second_res]
+
+        return pivot_df
