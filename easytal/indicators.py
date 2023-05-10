@@ -84,19 +84,14 @@ class Overlays:
         return tema
     
     def wma(self, close: pd.Series, period: int) -> pd.Series:
-         """
+        """
         Returns a `Series` object containing WMA values for the period and imported series.
 
         :param close: `Series` object containing closing price information.
         :param period: Integer value over which to calculate the WMA.
         """
-
-        for i in range(1, period):
-            sum = pd.Series()
-            sum[i-1] = sum[i] + (close[i] * i)
-
-        divisor = period * (period + 1) / 2
-        wma = sum / divisor
+        
+        wma = close.rolling(period).apply(lambda x: x[::-1].cumsum().sum() * 2 / period / (period + 1))
 
         return wma
     
