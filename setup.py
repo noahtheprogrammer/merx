@@ -3,7 +3,7 @@ from setuptools import find_packages, setup
 readme = open("README.md", "r")
 
 setup(
-    name="easyrsi",
+    name="easytal",
     packages=find_packages(include=["easytal"]),
     requires=["pandas"],
     version="0.0.1",

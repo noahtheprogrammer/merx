@@ -1,153 +1,143 @@
 import pandas as pd
 from math import sqrt
 
-class Oscillators:
+def rsi(close: pd.Series, period: int) -> pd.Series:
+    """
+    Returns a `Series` object containing RSI values for the period and imported series.
 
-    def __init__(self) -> None:
-        pass
+    :param close: `Series` object containing closing price information.
+    :param period: Integer value over which to calculate the RSI.
+    """
 
-    def rsi(self, close: pd.Series, period: int) -> pd.Series:
-        """
-        Returns a `Series` object containing RSI values for the period and imported series.
+    delta = close.diff()
+    up = delta.clip(lower=0)
+    down = delta.clip(upper=0).abs()
 
-        :param close: `Series` object containing closing price information.
-        :param period: Integer value over which to calculate the RSI.
-        """
-
-        delta = close.diff()
-        up = delta.clip(lower=0)
-        down = delta.clip(upper=0).abs()
-
-        upper_ema = up.ewm(com = period - 1, adjust=False, min_periods=period).mean()
-        lower_ema = down.ewm(com = period - 1, adjust=False, min_periods=period).mean()
-        rsi = upper_ema / lower_ema
-        rsi = 100 - (100/(1 + rsi))
-        
-        return rsi
+    upper_ema = up.ewm(com = period - 1, adjust=False, min_periods=period).mean()
+    lower_ema = down.ewm(com = period - 1, adjust=False, min_periods=period).mean()
+    rsi = upper_ema / lower_ema
+    rsi = 100 - (100/(1 + rsi))
     
-class Overlays:
+    return rsi
 
-    def __init__(self) -> None:
-        pass
+def sma(close: pd.Series, period: int) -> pd.Series:
+    """
+    Returns a `Series` object containing SMA values for the period and imported series.
 
-    def sma(self, close: pd.Series, period: int) -> pd.Series:
-        """
-        Returns a `Series` object containing SMA values for the period and imported series.
+    :param close: `Series` object containing closing price information.
+    :param period: Integer value over which to calculate the SMA.
+    """
 
-        :param close: `Series` object containing closing price information.
-        :param period: Integer value over which to calculate the SMA.
-        """
+    sma = close.rolling(period).mean()
 
-        sma = close.rolling(period).mean()
+    return sma
 
-        return sma
+def ema(close: pd.Series, period: int) -> pd.Series:
+    """
+    Returns a `Series` object containing EMA values for the period and imported series.
 
-    def ema(self, close: pd.Series, period: int) -> pd.Series:
-        """
-        Returns a `Series` object containing EMA values for the period and imported series.
+    :param close: `Series` object containing closing price information.
+    :param period: Integer value over which to calculate the EMA.
+    """
 
-        :param close: `Series` object containing closing price information.
-        :param period: Integer value over which to calculate the EMA.
-        """
+    ema = close.ewm(span=period, adjust=False).mean()
 
-        ema = close.ewm(span=period, adjust=False).mean()
+    return ema
 
-        return ema
+def dema(close: pd.Series, period: int) -> pd.Series:
+    """
+    Returns a `Series` object containing DEMA values for the period and imported series.
+
+    :param close: `Series` object containing closing price information.
+    :param period: Integer value over which to calculate the DEMA.
+    """
     
-    def dema(self, close: pd.Series, period: int) -> pd.Series:
-        """
-        Returns a `Series` object containing DEMA values for the period and imported series.
+    primary_ema = ema(close, period)
+    secondary_ema = ema(primary_ema, period)
+    dema = (primary_ema * 2) - secondary_ema
 
-        :param close: `Series` object containing closing price information.
-        :param period: Integer value over which to calculate the DEMA.
-        """
-        
-        primary_ema = self.ema(close, period)
-        secondary_ema = self.ema(primary_ema, period)
-        dema = (primary_ema * 2) - secondary_ema
+    return dema
 
-        return dema
+def tema(close: pd.Series, period: int) -> pd.Series:
+    """
+    Returns a `Series` object containing TEMA values for the period and imported series.
+
+    :param close: `Series` object containing closing price information.
+    :param period: Integer value over which to calculate the TEMA.
+    """
     
-    def tema(self, close: pd.Series, period: int) -> pd.Series:
-        """
-        Returns a `Series` object containing TEMA values for the period and imported series.
+    primary_ema = ema(close, period)
+    secondary_ema = ema(primary_ema, period)
+    tertiary_ema = ema(secondary_ema, period)
+    tema = (primary_ema * 3) - (secondary_ema * 3) + tertiary_ema
 
-        :param close: `Series` object containing closing price information.
-        :param period: Integer value over which to calculate the TEMA.
-        """
-        
-        primary_ema = self.ema(close, period)
-        secondary_ema = self.ema(primary_ema, period)
-        tertiary_ema = self.ema(secondary_ema, period)
-        tema = (primary_ema * 3) - (secondary_ema * 3) + tertiary_ema
+    return tema
 
-        return tema
+def wma(close: pd.Series, period: int) -> pd.Series:
+    """
+    Returns a `Series` object containing WMA values for the period and imported series.
+
+    :param close: `Series` object containing closing price information.
+    :param period: Integer value over which to calculate the WMA.
+    """
     
-    def wma(self, close: pd.Series, period: int) -> pd.Series:
-        """
-        Returns a `Series` object containing WMA values for the period and imported series.
+    wma = close.rolling(period).apply(lambda x: x[::-1].cumsum().sum() * 2 / period / (period + 1))
 
-        :param close: `Series` object containing closing price information.
-        :param period: Integer value over which to calculate the WMA.
-        """
-        
-        wma = close.rolling(period).apply(lambda x: x[::-1].cumsum().sum() * 2 / period / (period + 1))
+    return wma
 
-        return wma
-    
-    def hma(self, close: pd.Series, period: int)  -> pd.Series:
-        """
-        Returns a `Series` object containing HMA values for the period and imported series.
+def hma(close: pd.Series, period: int)  -> pd.Series:
+    """
+    Returns a `Series` object containing HMA values for the period and imported series.
 
-        :param close: `Series` object containing closing price information.
-        :param period: Integer value over which to calculate the HMA.
-        """
+    :param close: `Series` object containing closing price information.
+    :param period: Integer value over which to calculate the HMA.
+    """
 
-        primary_wma = self.wma(close, round(period/2))
-        secondary_wma = self.wma(close, period)
+    primary_wma = wma(close, round(period/2))
+    secondary_wma = wma(close, period)
 
-        raw_hma = (2 * primary_wma) - secondary_wma
-        hma = self.wma(raw_hma, round(sqrt(period)))
+    raw_hma = (2 * primary_wma) - secondary_wma
+    hma = wma(raw_hma, round(sqrt(period)))
 
-        return hma
+    return hma
 
-    def bollinger_bands(self, close: pd.Series, period: int) -> pd.Series:
-        """
-        Returns both the upper and lower Bollinger Band values as `Series` objects.
+def bollinger_bands(close: pd.Series, period: int) -> pd.Series:
+    """
+    Returns both the upper and lower Bollinger Band values as `Series` objects.
 
-        :param close: `Series` object containing closing price information.
-        :param period: Integer value over which to calculate the Bollinger Bands.
-        """
+    :param close: `Series` object containing closing price information.
+    :param period: Integer value over which to calculate the Bollinger Bands.
+    """
 
-        sma = self.sma(close, period)
-        std = close.rolling(period).std()
+    simple = sma(close, period)
+    std = close.rolling(period).std()
 
-        upper_bband = sma + std * 2
-        lower_bband = sma - std * 2
+    upper_bband = simple + std * 2
+    lower_bband = simple - std * 2
 
-        return upper_bband, lower_bband
-    
-    def pivot_points(self, high: pd.Series, low: pd.Series, close: pd.Series) -> pd.DataFrame:
-        """
-        Returns the pivot point, first support, second support, first resistance, and second resistance in a `DataFrame` object.
+    return upper_bband, lower_bband
 
-        :param high: `Series` object containing high price information.
-        :param low: `Series` object containing low price information.
-        :param close: `Series` object containing closing price information.
-        """
+def pivot_points(high: pd.Series, low: pd.Series, close: pd.Series) -> pd.DataFrame:
+    """
+    Returns the pivot point, first support, second support, first resistance, and second resistance in a `DataFrame` object.
 
-        columns=["Pivot", "First Support", "Second Support", "First Resistance", "Second Resistance"]
-        pivot_df = pd.DataFrame(columns=columns)
+    :param high: `Series` object containing high price information.
+    :param low: `Series` object containing low price information.
+    :param close: `Series` object containing closing price information.
+    """
 
-        for i in range(1, len(close)+1):
-            x = i-1
-            point = (high[x] + low[x] + close[x])/3
+    columns=["Pivot", "First Support", "Second Support", "First Resistance", "Second Resistance"]
+    pivot_df = pd.DataFrame(columns=columns)
 
-            first_sprt = (point * 2) - high[x]
-            second_sprt = point - (high[x], low[x])
-            first_res = (point * 2) - low[x]
-            second_res = point + (high[x] - low[x])
+    for x in range(0, len(close)):
 
-            pivot_df.loc[len(pivot_df)] = [point, first_sprt, second_sprt, first_res, second_res]
+        point = (high[x] + low[x] + close[x])/3
 
-        return pivot_df
+        first_sprt = (point * 2) - high[x]
+        second_sprt = point - (high[x] - low[x])
+        first_res = (point * 2) - low[x]
+        second_res = point + (high[x] - low[x])
+
+        pivot_df.loc[len(pivot_df)] = [point, first_sprt, second_sprt, first_res, second_res]
+
+    return pivot_df
