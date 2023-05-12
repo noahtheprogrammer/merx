@@ -141,3 +141,29 @@ def pivot_points(high: pd.Series, low: pd.Series, close: pd.Series) -> pd.DataFr
         pivot_df.loc[len(pivot_df)] = [point, first_sprt, second_sprt, first_res, second_res]
 
     return pivot_df
+
+def macd(close: pd.Series, slow: int, fast: int, signal_period: int) -> pd.DataFrame:
+    """
+    Returns the MACD, signal line and histogram in a `DataFrame` object.
+
+    :param close: `Series` object containing closing price information.
+    :param slow: Integer value over which to calculate the slow EMA.
+    :param fast: Integer value over which to calculate the fast EMA.
+    :param signal_period: Integer value over which to calculate the Signal using the prior EMA values.
+    """
+
+    slow_ema = ema(close, slow)
+    fast_ema = ema(close, fast)
+
+    macd = fast_ema - slow_ema
+    signal = ema(macd, signal_period)
+    histogram = macd - signal
+
+    columns=["MACD", "Signal", "Histogram"]
+    macd_df = pd.DataFrame(columns=columns)
+
+    macd_df["MACD"] = macd
+    macd_df["Signal"] = signal
+    macd_df["Histogram"] = histogram
+
+    return macd_df
