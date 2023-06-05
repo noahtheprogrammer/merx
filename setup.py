@@ -3,8 +3,8 @@ from setuptools import find_packages, setup
 readme = open("README.md", "r")
 
 setup(
-    name="easytal",
-    packages=find_packages(include=["easytal"]),
+    name="merx",
+    packages=find_packages(include=["merx"]),
     requires=["pandas"],
     version="0.0.1",
     description="Python library to more easily utilize technical analysis indicators.",

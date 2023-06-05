@@ -1,5 +1,5 @@
 import pandas as pd
-from easytal.overlays import ema
+from merx.overlays import ema
 
 def rsi(close: pd.Series, period: int) -> pd.Series:
     """
