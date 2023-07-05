@@ -64,9 +64,23 @@ def hma(close: pd.Series, period: int)  -> pd.Series:
 
     return hma
 
+def ma_envelope(moving_average: pd.Series, multiplier: float):
+    """
+    Returns a `DataFrame` object containing the upper and lower moving average bands.
+    """
+
+    upper_ma = moving_average + moving_average * multiplier
+    lower_ma = moving_average - moving_average * multiplier
+
+    envelope_df = pd.concat([upper_ma, lower_ma], axis=1)
+    envelope_df.columns = ["upper", "lower"]
+    envelope_df.index.name = None
+
+    return envelope_df
+
 def bollinger_bands(close: pd.Series, period: int) -> pd.Series:
     """
-    Returns two `Series` objects containing the upper and lower Bollinger Bands.
+    Returns a `DataFrame` object containing the upper and lower Bollinger Bands.
     """
 
     simple = sma(close, period)
