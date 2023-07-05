@@ -75,14 +75,18 @@ def bollinger_bands(close: pd.Series, period: int) -> pd.Series:
     upper_bband = simple + std * 2
     lower_bband = simple - std * 2
 
-    return upper_bband, lower_bband
+    bband_df = pd.concat([upper_bband, lower_bband], axis=1)
+    bband_df.columns = ["upper", "lower"]
+    bband_df.index.name = None
+
+    return bband_df
 
 def pivot_points(high: pd.Series, low: pd.Series, close: pd.Series) -> pd.DataFrame:
     """
     Returns a `DataFrame` object containing the pivot point, first support/resistance, and second support/resistance.
     """
 
-    columns=["Pivot", "First Support", "Second Support", "First Resistance", "Second Resistance"]
+    columns = ["pivot", "support_1", "support_2", "resistance_1", "resistance_2"]
     pivot_df = pd.DataFrame(columns=columns)
 
     for x in range(0, len(close)):
@@ -95,5 +99,8 @@ def pivot_points(high: pd.Series, low: pd.Series, close: pd.Series) -> pd.DataFr
         second_res = point + (high[x] - low[x])
 
         pivot_df.loc[len(pivot_df)] = [point, first_sprt, second_sprt, first_res, second_res]
+    
+    date_arr = close.index.tolist()
+    pivot_df = pivot_df.set_axis(date_arr)
 
     return pivot_df

@@ -44,6 +44,8 @@ def tr(high: pd.Series, low: pd.Series, close: pd.Series) -> pd.Series:
     """
     
     arr = []
+    date_arr = close.index.tolist()
+    date_arr.pop(0)
 
     for x in range(1, len(close)):
         
@@ -51,6 +53,7 @@ def tr(high: pd.Series, low: pd.Series, close: pd.Series) -> pd.Series:
         arr.append(val)
     
     tr_series = pd.Series(arr)
+    tr_series = tr_series.set_axis(date_arr)
 
     return tr_series
 
@@ -58,8 +61,12 @@ def atr(high: pd.Series, low: pd.Series, close: pd.Series, period: int) -> pd.Se
     """
     Returns a `Series` object containing the Average True Range.
     """
+
+    date_arr = close.index.tolist()
+    date_arr.pop(0)
     
     arr = tr(high, low, close)
     atr_series = arr.rolling(period).mean()
+    atr_series = atr_series.set_axis(date_arr)
 
     return atr_series
