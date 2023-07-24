@@ -95,9 +95,9 @@ def bollinger_bands(close: pd.Series, period: int) -> pd.Series:
 
     return bband_df
 
-def pivot_points(high: pd.Series, low: pd.Series, close: pd.Series) -> pd.DataFrame:
+def standard_pivot(high: pd.Series, low: pd.Series, close: pd.Series) -> pd.DataFrame:
     """
-    Returns a `DataFrame` object containing the pivot point, first support/resistance, and second support/resistance.
+    Returns a `DataFrame` object containing the standard pivot point, two support levels, and two resistance levels.
     """
 
     columns = ["pivot", "support_1", "support_2", "resistance_1", "resistance_2"]
@@ -118,3 +118,29 @@ def pivot_points(high: pd.Series, low: pd.Series, close: pd.Series) -> pd.DataFr
     pivot_df = pivot_df.set_axis(date_arr)
 
     return pivot_df
+
+def fibonacci_pivot(high: pd.Series, low: pd.Series, close: pd.Series) -> pd.DataFrame:
+    """
+    Returns a `DataFrame` object containing the Fibonacci pivot point, three support levels, and three resistance levels.
+    """
+
+    columns = ["pivot", "support_1", "support_2", "support_3", "resistance_1", "resistance_2", "resistance_3"]
+    fib_df = pd.DataFrame(columns=columns)
+
+    for x in range(0, len(close)):
+
+        point = (high[x] + low[x] + close[x])/3
+
+        first_sprt = point - 0.382 * (high[x] - low[x])
+        second_sprt = point - 0.618 * (high[x] - low[x])
+        third_sprt = point - 1 * (high[x] - low[x])
+        first_res = point + 0.382 * (high[x] - low[x])
+        second_res = point + 0.618 * (high[x] - low[x])
+        third_res = point + 1 * (high[x] - low[x])
+
+        fib_df.loc[len(fib_df)] = [point, first_sprt, second_sprt, third_sprt, first_res, second_res, third_res]
+
+    date_arr = close.index.tolist()
+    fib_df = fib_df.set_axis(date_arr)
+
+    return fib_df
