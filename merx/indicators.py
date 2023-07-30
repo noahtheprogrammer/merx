@@ -78,7 +78,7 @@ def ma_envelope(moving_average: pd.Series, multiplier: float):
 
     return envelope_df
 
-def bollinger_bands(close: pd.Series, period: int) -> pd.Series:
+def bollinger_bands(close: pd.Series, period: int) -> pd.DataFrame:
     """
     Returns a `DataFrame` object containing the upper and lower Bollinger Bands.
     """
@@ -144,3 +144,82 @@ def fibonacci_pivot(high: pd.Series, low: pd.Series, close: pd.Series) -> pd.Dat
     fib_df = fib_df.set_axis(date_arr)
 
     return fib_df
+
+def rsi(close: pd.Series, period: int) -> pd.Series:
+    """
+    Returns a `Series` object containing the Relative Strength Index.
+    """
+
+    delta = close.diff()
+    up = delta.clip(lower=0)
+    down = delta.clip(upper=0).abs()
+
+    upper_ema = up.ewm(com = period - 1, adjust=False, min_periods=period).mean()
+    lower_ema = down.ewm(com = period - 1, adjust=False, min_periods=period).mean()
+    rsi = upper_ema / lower_ema
+    rsi = 100 - (100/(1 + rsi))
+    
+    return rsi
+
+def tr(high: pd.Series, low: pd.Series, close: pd.Series) -> pd.Series:
+    """
+    Returns a `Series` object containing the True Range.
+    """
+    
+    arr = []
+    date_arr = close.index.tolist()
+    date_arr.pop(0)
+
+    for x in range(1, len(close)):
+        
+        val = max(high[x] - low[x], abs(high[x] - close[x-1]), abs(low[x] - close[x-1]))
+        arr.append(val)
+    
+    tr_series = pd.Series(arr)
+    tr_series = tr_series.set_axis(date_arr)
+
+    return tr_series
+
+def atr(high: pd.Series, low: pd.Series, close: pd.Series, period: int) -> pd.Series:
+    """
+    Returns a `Series` object containing the Average True Range.
+    """
+
+    date_arr = close.index.tolist()
+    date_arr.pop(0)
+    
+    arr = tr(high, low, close)
+    atr_series = arr.rolling(period).mean()
+    atr_series = atr_series.set_axis(date_arr)
+
+    return atr_series
+
+def chandelier(high: pd.Series, low: pd.Series, close: pd.Series) -> pd.DataFrame:
+    """
+    Returns a `DataFrame` object containing long and short Chandelier exits.
+    """
+
+    long_exit = high.rolling(22).max() - (atr(high, low, close, 22) * 3)
+    short_exit = low.rolling(22).max() + (atr(high, low, close, 22) * 3)
+
+    chandelier_df = pd.DataFrame(columns=["long", "short"])
+    chandelier_df["long"], chandelier_df["short"] = long_exit, short_exit
+
+    return chandelier_df
+
+def macd(close: pd.Series, slow: int, fast: int, period: int) -> pd.DataFrame:
+    """
+    Returns a `DataFrame` object containing the histogram, signal line, and MACD.
+    """
+
+    slow_ema = ema(close, slow)
+    fast_ema = ema(close, fast)
+
+    macd = fast_ema - slow_ema
+    signal = ema(macd, period)
+    histogram = macd - signal
+
+    macd_df = pd.DataFrame(columns=["macd", "signal", "histogram"])
+    macd_df["macd"], macd_df["signal"], macd_df["histogram"]  = macd, signal, histogram
+
+    return macd_df
