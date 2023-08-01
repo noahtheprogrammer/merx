@@ -78,44 +78,19 @@ def ma_envelope(moving_average: pd.Series, multiplier: float):
 
     return envelope_df
 
-def bollinger_bands(close: pd.Series, period: int) -> pd.DataFrame:
-    """
-    Returns a `DataFrame` object containing the upper and lower Bollinger Bands.
-    """
-
-    simple = sma(close, period)
-    std = close.rolling(period).std()
-
-    upper_bband = simple + std * 2
-    lower_bband = simple - std * 2
-
-    bband_df = pd.concat([upper_bband, lower_bband], axis=1)
-    bband_df.columns = ["upper", "lower"]
-    bband_df.index.name = None
-
-    return bband_df
-
 def standard_pivot(high: pd.Series, low: pd.Series, close: pd.Series) -> pd.DataFrame:
     """
     Returns a `DataFrame` object containing the standard pivot point, two support levels, and two resistance levels.
     """
 
-    columns = ["pivot", "support_1", "support_2", "resistance_1", "resistance_2"]
-    pivot_df = pd.DataFrame(columns=columns)
-
-    for x in range(0, len(close)):
-
-        point = (high[x] + low[x] + close[x])/3
-
-        first_sprt = (point * 2) - high[x]
-        second_sprt = point - (high[x] - low[x])
-        first_res = (point * 2) - low[x]
-        second_res = point + (high[x] - low[x])
-
-        pivot_df.loc[len(pivot_df)] = [point, first_sprt, second_sprt, first_res, second_res]
-    
     date_arr = close.index.tolist()
-    pivot_df = pivot_df.set_axis(date_arr)
+    pivot_df = pd.DataFrame(index=date_arr)
+
+    pivot_df["pivot"] = (high + low + close)/3
+    pivot_df = pivot_df.assign(sup1=lambda x: (x["pivot"] * 2 - high[x.index]))
+    pivot_df = pivot_df.assign(sup2=lambda x: (x["pivot"] - (high[x.index] - low[x.index])))
+    pivot_df = pivot_df.assign(res1=lambda x: (x["pivot"] * 2 - low[x.index]))
+    pivot_df = pivot_df.assign(res2=lambda x: (x["pivot"] + (high[x.index] - low[x.index])))
 
     return pivot_df
 
@@ -124,26 +99,18 @@ def fibonacci_pivot(high: pd.Series, low: pd.Series, close: pd.Series) -> pd.Dat
     Returns a `DataFrame` object containing the Fibonacci pivot point, three support levels, and three resistance levels.
     """
 
-    columns = ["pivot", "support_1", "support_2", "support_3", "resistance_1", "resistance_2", "resistance_3"]
-    fib_df = pd.DataFrame(columns=columns)
-
-    for x in range(0, len(close)):
-
-        point = (high[x] + low[x] + close[x])/3
-
-        first_sprt = point - 0.382 * (high[x] - low[x])
-        second_sprt = point - 0.618 * (high[x] - low[x])
-        third_sprt = point - 1 * (high[x] - low[x])
-        first_res = point + 0.382 * (high[x] - low[x])
-        second_res = point + 0.618 * (high[x] - low[x])
-        third_res = point + 1 * (high[x] - low[x])
-
-        fib_df.loc[len(fib_df)] = [point, first_sprt, second_sprt, third_sprt, first_res, second_res, third_res]
-
     date_arr = close.index.tolist()
-    fib_df = fib_df.set_axis(date_arr)
+    fibb_df = pd.DataFrame(index=date_arr)
 
-    return fib_df
+    fibb_df["pivot"] = (high + low + close)/3
+    fibb_df = fibb_df.assign(sup1=lambda x: x["pivot"] - 0.382 * (high[x.index] - low[x.index]))
+    fibb_df = fibb_df.assign(sup2=lambda x: x["pivot"] - 0.618 * (high[x.index] - low[x.index]))
+    fibb_df = fibb_df.assign(sup3=lambda x: x["pivot"] - 1 * (high[x.index] - low[x.index]))
+    fibb_df = fibb_df.assign(res1=lambda x: x["pivot"] + 0.382 * (high[x.index] - low[x.index]))
+    fibb_df = fibb_df.assign(res2=lambda x: x["pivot"] + 0.618 * (high[x.index] - low[x.index]))
+    fibb_df = fibb_df.assign(res3=lambda x: x["pivot"] + 1 * (high[x.index] - low[x.index]))
+
+    return fibb_df
 
 def rsi(close: pd.Series, period: int) -> pd.Series:
     """
@@ -221,5 +188,23 @@ def macd(close: pd.Series, slow: int, fast: int, period: int) -> pd.DataFrame:
 
     macd_df = pd.DataFrame(columns=["macd", "signal", "histogram"])
     macd_df["macd"], macd_df["signal"], macd_df["histogram"]  = macd, signal, histogram
+    macd_df.index.name = None
 
     return macd_df
+
+def bollinger_bands(close: pd.Series, period: int) -> pd.DataFrame:
+    """
+    Returns a `DataFrame` object containing the upper and lower Bollinger Bands.
+    """
+
+    simple = sma(close, period)
+    std = close.rolling(period).std()
+
+    upper = simple + std * 2
+    lower = simple - std * 2
+
+    bband_df = pd.DataFrame(columns=["upper", "lower"])
+    bband_df["upper"], bband_df["lower"] = upper, lower
+    bband_df.index.name = None
+    
+    return bband_df
