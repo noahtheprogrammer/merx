@@ -72,11 +72,11 @@ def ma_envelope(moving_average: pd.Series, multiplier: float):
     upper_ma = moving_average + moving_average * multiplier
     lower_ma = moving_average - moving_average * multiplier
 
-    envelope_df = pd.concat([upper_ma, lower_ma], axis=1)
-    envelope_df.columns = ["upper", "lower"]
-    envelope_df.index.name = None
+    envelope = pd.concat([upper_ma, lower_ma], axis=1)
+    envelope.columns = ["upper", "lower"]
+    envelope.index.name = None
 
-    return envelope_df
+    return envelope
 
 def standard_pivot(high: pd.Series, low: pd.Series, close: pd.Series) -> pd.DataFrame:
     """
@@ -84,15 +84,15 @@ def standard_pivot(high: pd.Series, low: pd.Series, close: pd.Series) -> pd.Data
     """
 
     date_arr = close.index.tolist()
-    pivot_df = pd.DataFrame(index=date_arr)
+    points = pd.DataFrame(index=date_arr)
 
-    pivot_df["pivot"] = (high + low + close)/3
-    pivot_df = pivot_df.assign(sup1=lambda x: (x["pivot"] * 2 - high[x.index]))
-    pivot_df = pivot_df.assign(sup2=lambda x: (x["pivot"] - (high[x.index] - low[x.index])))
-    pivot_df = pivot_df.assign(res1=lambda x: (x["pivot"] * 2 - low[x.index]))
-    pivot_df = pivot_df.assign(res2=lambda x: (x["pivot"] + (high[x.index] - low[x.index])))
+    points["pivot"] = (high + low + close)/3
+    points = points.assign(sup1=lambda x: (x["pivot"] * 2 - high[x.index]))
+    points = points.assign(sup2=lambda x: (x["pivot"] - (high[x.index] - low[x.index])))
+    points = points.assign(res1=lambda x: (x["pivot"] * 2 - low[x.index]))
+    points = points.assign(res2=lambda x: (x["pivot"] + (high[x.index] - low[x.index])))
 
-    return pivot_df
+    return points
 
 def fibonacci_pivot(high: pd.Series, low: pd.Series, close: pd.Series) -> pd.DataFrame:
     """
@@ -100,17 +100,17 @@ def fibonacci_pivot(high: pd.Series, low: pd.Series, close: pd.Series) -> pd.Dat
     """
 
     date_arr = close.index.tolist()
-    fibb_df = pd.DataFrame(index=date_arr)
+    fibb = pd.DataFrame(index=date_arr)
 
-    fibb_df["pivot"] = (high + low + close)/3
-    fibb_df = fibb_df.assign(sup1=lambda x: x["pivot"] - 0.382 * (high[x.index] - low[x.index]))
-    fibb_df = fibb_df.assign(sup2=lambda x: x["pivot"] - 0.618 * (high[x.index] - low[x.index]))
-    fibb_df = fibb_df.assign(sup3=lambda x: x["pivot"] - 1 * (high[x.index] - low[x.index]))
-    fibb_df = fibb_df.assign(res1=lambda x: x["pivot"] + 0.382 * (high[x.index] - low[x.index]))
-    fibb_df = fibb_df.assign(res2=lambda x: x["pivot"] + 0.618 * (high[x.index] - low[x.index]))
-    fibb_df = fibb_df.assign(res3=lambda x: x["pivot"] + 1 * (high[x.index] - low[x.index]))
+    fibb["pivot"] = (high + low + close)/3
+    fibb = fibb.assign(sup1=lambda x: x["pivot"] - 0.382 * (high[x.index] - low[x.index]))
+    fibb = fibb.assign(sup2=lambda x: x["pivot"] - 0.618 * (high[x.index] - low[x.index]))
+    fibb = fibb.assign(sup3=lambda x: x["pivot"] - 1 * (high[x.index] - low[x.index]))
+    fibb = fibb.assign(res1=lambda x: x["pivot"] + 0.382 * (high[x.index] - low[x.index]))
+    fibb = fibb.assign(res2=lambda x: x["pivot"] + 0.618 * (high[x.index] - low[x.index]))
+    fibb = fibb.assign(res3=lambda x: x["pivot"] + 1 * (high[x.index] - low[x.index]))
 
-    return fibb_df
+    return fibb
 
 def rsi(close: pd.Series, period: int) -> pd.Series:
     """
@@ -132,20 +132,11 @@ def tr(high: pd.Series, low: pd.Series, close: pd.Series) -> pd.Series:
     """
     Returns a `Series` object containing the True Range.
     """
-    
-    arr = []
-    date_arr = close.index.tolist()
-    date_arr.pop(0)
 
-    for x in range(1, len(close)):
-        
-        val = max(high[x] - low[x], abs(high[x] - close[x-1]), abs(low[x] - close[x-1]))
-        arr.append(val)
-    
-    tr_series = pd.Series(arr)
-    tr_series = tr_series.set_axis(date_arr)
+    tr = pd.Series()
+    tr = pd.concat([high, close.shift()], axis=1).max(axis=1) - pd.concat([low, close.shift()], axis=1).min(axis=1)
 
-    return tr_series
+    return tr
 
 def atr(high: pd.Series, low: pd.Series, close: pd.Series, period: int) -> pd.Series:
     """
@@ -156,10 +147,10 @@ def atr(high: pd.Series, low: pd.Series, close: pd.Series, period: int) -> pd.Se
     date_arr.pop(0)
     
     arr = tr(high, low, close)
-    atr_series = arr.rolling(period).mean()
-    atr_series = atr_series.set_axis(date_arr)
+    atr = arr.rolling(period).mean()
+    atr = atr.set_axis(date_arr)
 
-    return atr_series
+    return atr
 
 def chandelier(high: pd.Series, low: pd.Series, close: pd.Series) -> pd.DataFrame:
     """
@@ -169,10 +160,10 @@ def chandelier(high: pd.Series, low: pd.Series, close: pd.Series) -> pd.DataFram
     long_exit = high.rolling(22).max() - (atr(high, low, close, 22) * 3)
     short_exit = low.rolling(22).max() + (atr(high, low, close, 22) * 3)
 
-    chandelier_df = pd.DataFrame(columns=["long", "short"])
-    chandelier_df["long"], chandelier_df["short"] = long_exit, short_exit
+    chandelier = pd.DataFrame(columns=["long", "short"])
+    chandelier["long"], chandelier["short"] = long_exit, short_exit
 
-    return chandelier_df
+    return chandelier
 
 def macd(close: pd.Series, slow: int, fast: int, period: int) -> pd.DataFrame:
     """
@@ -186,11 +177,11 @@ def macd(close: pd.Series, slow: int, fast: int, period: int) -> pd.DataFrame:
     signal = ema(macd, period)
     histogram = macd - signal
 
-    macd_df = pd.DataFrame(columns=["macd", "signal", "histogram"])
-    macd_df["macd"], macd_df["signal"], macd_df["histogram"]  = macd, signal, histogram
-    macd_df.index.name = None
+    macd = pd.DataFrame(columns=["macd", "signal", "histogram"])
+    macd["macd"], macd["signal"], macd["histogram"]  = macd, signal, histogram
+    macd.index.name = None
 
-    return macd_df
+    return macd
 
 def bollinger_bands(close: pd.Series, period: int) -> pd.DataFrame:
     """
@@ -203,8 +194,8 @@ def bollinger_bands(close: pd.Series, period: int) -> pd.DataFrame:
     upper = simple + std * 2
     lower = simple - std * 2
 
-    bband_df = pd.DataFrame(columns=["upper", "lower"])
-    bband_df["upper"], bband_df["lower"] = upper, lower
-    bband_df.index.name = None
+    bband = pd.DataFrame(columns=["upper", "lower"])
+    bband["upper"], bband["lower"] = upper, lower
+    bband.index.name = None
     
-    return bband_df
+    return bband
