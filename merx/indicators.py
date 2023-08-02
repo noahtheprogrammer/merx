@@ -152,6 +152,17 @@ def atr(high: pd.Series, low: pd.Series, close: pd.Series, period: int) -> pd.Se
 
     return atr
 
+def er(close: pd.Series) -> pd.Series:
+    """
+    Returns a `Series` object containing the Efficiency Ratio.
+    """
+
+    change = abs(close - close.shift(10))
+    volatility = abs(close - close.shift(1)).rolling(10).sum()
+    er = change/volatility
+
+    return er
+
 def chandelier(high: pd.Series, low: pd.Series, close: pd.Series) -> pd.DataFrame:
     """
     Returns a `DataFrame` object containing long and short Chandelier exits.
