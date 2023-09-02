@@ -171,6 +171,15 @@ def standard_deviation(close: pd.Series, period: int) -> pd.Series:
     
     return dev
 
+def percent_r(high: pd.Series, low: pd.Series, close: pd.Series, period: int) -> pd.Series:
+    """
+    Returns a `Series` object containing William's %R.
+    """
+
+    r = (high.rolling(period).max() - close)/(high.rolling(period).max() - low.rolling(period).min()) * -100
+
+    return r
+
 def chandelier(high: pd.Series, low: pd.Series, close: pd.Series) -> pd.DataFrame:
     """
     Returns a `DataFrame` object containing long and short Chandelier exits.
