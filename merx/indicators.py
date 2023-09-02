@@ -144,7 +144,6 @@ def atr(high: pd.Series, low: pd.Series, close: pd.Series, period: int) -> pd.Se
     """
 
     date_arr = close.index.tolist()
-    date_arr.pop(0)
     
     arr = tr(high, low, close)
     atr = arr.rolling(period).mean()
@@ -162,6 +161,15 @@ def er(close: pd.Series) -> pd.Series:
     er = change/volatility
 
     return er
+
+def standard_deviation(close: pd.Series, period: int) -> pd.Series:
+    """
+    Returns a `Series` object containing the Standard Deviation.
+    """
+
+    dev = close.rolling(period).std()
+    
+    return dev
 
 def chandelier(high: pd.Series, low: pd.Series, close: pd.Series) -> pd.DataFrame:
     """
