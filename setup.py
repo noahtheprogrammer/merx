@@ -6,7 +6,7 @@ setup(
     name="merx",
     packages=find_packages(include=["merx"]),
     requires=["pandas"],
-    version="0.0.1",
+    version="0.1.0",
     description="Python library to more easily utilize technical analysis indicators.",
     long_description=readme.read(),
     long_description_content_type='text/markdown',
